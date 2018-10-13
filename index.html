@@ -1,42 +1,71 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel=stylesheet href=style.css>
 
     <title>Virtual Chain</title>
-      <style>
-          .main-field{
-              height: 300px;
-              border: 1px solid #000;
-          }
-      
-      </style>
-  </head>
-  <body>
-      <main class="container-fluid">
-          <div class="container">
-            <div class="row">
-                <div class="col-12 main-field">
-                    
-                </div>  
+</head>
+
+<body>
+    <nav>
+        <div class="brand">
+            
+        </div>
+        <div class="controls">
+            <a class="button" href="#">Link1</a>
+            <a class="button" href="#">Link1</a>
+            <a class="button" href="#">Link1</a>
+            <a class="button" href="#">Link1</a>
+        </div>
+    </nav>
+    <main>
+        <div class=field>
+            <div class="block tile">
+                <div class="hash">
+                    <span class="label">modmi23nd2d0j032hd20jedn2u3dh9hd929b92jjd29dj02jm0m</span>
+                </div>
+                <div class="txns">
+                    <div class="transaction tile">
+                        <span class="text">from: white43, to: blanketty46, amount: 100</span>
+                    </div>
+                    <div class="transaction tile">
+                        <span class="text">from: white43, to: blanketty46, amount: 100</span>
+                    </div>
+                </div>
             </div>
-          </div>
-      </main>
-      
-      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+            
+            <div class="block tile">
+                <div class="hash">
+                    <span class="label">mining...</span>
+                </div>
+                <div class="txns">
+                    <div class="transaction tile">
+                        <span class="text">from: white43, to: blanketty46, amount: 100</span>
+                    </div>
+                    <div class="loading">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-      <script>
-          
-      let mainField = document.querySelector('.main-field');
-      
-          mainField.addEventListener('newTxn', () => {
-              
-          });
-      
-      </script>
-  </body>
+    <script>
+        let mainField = document.querySelector('.main-field');
+
+        mainField.addEventListener('newTxn', () => {
+
+        });
+    </script>
+</body>
+
 </html>
