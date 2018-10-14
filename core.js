@@ -1,4 +1,6 @@
 const SHA256 = require('crypto-js/sha256');
+const express = require('express');
+var path = require('path');
 
 class Transaction {
     constructor(from, to, amount) {
@@ -102,6 +104,18 @@ class Blockchain {
     }
 }
 
+var app = express();
+app.use(express.static(__dirname + '/public'));
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+    //res.send(JSON.stringify({from: 'asd', to: 'asda', amount: 100}));
+});
+
+app.listen(8080);
+console.log('Blockchain is running... ');
+
+
 let Virtual = new Blockchain();
 Virtual.createTransaction(new Transaction('white43', 'blanketty46', 100));
 Virtual.createTransaction(new Transaction('jollyRoger55', 'white43', 50));
@@ -114,3 +128,6 @@ Virtual.createTransaction(new Transaction('blanketty46', 'jollyRoger55', 50));
 
 Virtual.minePendingTransactions('white43');
 console.log('\n Balance of miner is ', Virtual.getBalanceOfAddress('white43'));
+
+
+
