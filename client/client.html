@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+
+
+<!-- здесь будут появляться входящие сообщения -->
+<div id="subscribe"></div>
+
+<script>
+  if (!window.WebSocket) {
+	  document.body.innerHTML = 'WebSocket в этом браузере не поддерживается.';
+  }
+
+  // создать подключение
+  var socket = new WebSocket('ws://localhost:8081');
+
+
+  // обработчик входящих сообщений
+  socket.onmessage = function(event) {
+    var incomingMessage = event.data;
+    showMessage(incomingMessage);
+  };
+
+  // показать сообщение в div#subscribe
+  function showMessage(message) {
+    var messageElem = document.createElement('div');
+    messageElem.appendChild(document.createTextNode(message));
+    document.getElementById('subscribe').appendChild(messageElem);
+  }
+</script>
+
+</body>
+</html>
