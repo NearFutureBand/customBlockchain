@@ -21,7 +21,21 @@ class App extends Component {
       console.log(JSON.parse(event.data));
       this.setState( { blocks: [ ...this.state.blocks, event.data]});
     };
+
+    this.socket.onopen = () => {
+
+      let i = 10;
+      let interval = setTimeout( () => {
+        const trx = { from: 'paulwhite43', to: 'blanketty46', amount: i++};
+        console.log(trx);
+        this.socket.send( JSON.stringify( trx ) );
+        clearInterval( interval );
+      }, 1000);
+    
+    };
   }
+
+
 
   render() {
 

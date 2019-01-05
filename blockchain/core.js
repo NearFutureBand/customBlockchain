@@ -79,7 +79,7 @@ class Blockchain {
             console.log('\n' + block.hash + '\n' + JSON.stringify( block.transactions ) );
             this.chain.push(block);
 
-            this.createTransaction( new Transaction('virtual', miningRewardAddress, this.miningReward) );
+            //this.createTransaction( new Transaction('virtual', miningRewardAddress, this.miningReward) );
 
             resolve(block);
         });
@@ -136,9 +136,15 @@ webSocketServer.on('connection', function(ws) {
   clients[id] = ws;
   console.log("новое соединение " + id);
 
-  ws.on('close', function() {
+  ws.on('close', () => {
     console.log('соединение закрыто ' + id);
     delete clients[id];
+  });
+
+  ws.on('message', (req) => {
+    const trx = JSON.parse(req);
+    Virtual.createTransaction(new Transaction(trx.from, trx.to, trx.amount) );
+    console.log('\nnew transaction: ', JSON.stringify( Virtual.pendingTransactions ));
   });
 });
 
@@ -150,11 +156,11 @@ http.createServer(function (req, res) {
 console.log("Блокчейн запущен на портах 8080, 8081");
 
 
-let amount = 10;
+/*let amount = 10;
 let transactionsFlow = setInterval(async () => {
     Virtual.createTransaction(new Transaction('jollyRoger55', 'blanketty46', amount++) );
     console.log('\nnew transaction: ', JSON.stringify( Virtual.pendingTransactions ));
-}, 3000);
+}, 3000);*/
 
 function automine(){
     Virtual.minePendingTransactions('')
