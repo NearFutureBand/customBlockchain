@@ -18,6 +18,7 @@ class App extends Component {
     this.socket = new WebSocket('ws://localhost:8081');
 
     this.socket.onmessage = (event) => {
+      console.log(JSON.parse(event.data));
       this.setState( { blocks: [ ...this.state.blocks, event.data]});
     };
   }

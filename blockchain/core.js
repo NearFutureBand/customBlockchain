@@ -8,6 +8,8 @@ class Transaction {
         this.from = from;
         this.to = to;
         this.amount = amount;
+        this.hash = SHA256(from + to + amount).toString();
+        this.timestamp = Date.now();
     }
 }
 
@@ -21,16 +23,26 @@ class Block {
     }
     
     calculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+        return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString();
     }
+
     mine(difficulty) {
-        while( this.hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
-            this.nonce++;
-            this.hash = this.calculateHash();
-        }
-        
-        console.log('Block mined: ' + this.hash);
-        
+        return new Promise( (resolve) => {
+            while( this.hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
+                this.nonce++;
+                this.hash = this.calculateHash();
+            }
+            resolve();
+        });
+
+        /*
+        return new Promise( (resolve) => {
+            setTimeout(() => {
+                this.hash = this.calculateHash();
+                resolve();
+            }, 2000);
+        });
+        */
     }
     
 }
@@ -40,34 +52,41 @@ class Blockchain {
         this.chain = [this.createGenesisBlock()];
         this.difficulty = 4;
         this.timer = 2000;
-        this.pendingTransactions = [];
+        this.pendingTransactions = {};
         this.miningReward = 10;
     }
     
     createGenesisBlock() {
-        return new Block(0, 0, '{"other":"Genesis Block"}', "0");
+        return new Block(0, '{"other":"Genesis Block"}');
     }
     
     getLatestBlock() {
         return this.chain[this.chain.length - 1];
     }
     
-    minePendingTransactions(miningRewardAddress) {
-        console.log('\n Starting the miner...');
-        
-        let block = new Block(Date.now(), this.pendingTransactions);
-        block.mine( this.difficulty);
-        
-        console.log('Block successfully mined!');
-        this.chain.push(block);
-        
-        this.pendingTransactions = [
-            new Transaction(null, miningRewardAddress, this.miningReward)
-        ];
+    minePendingTransactions (miningRewardAddress) {
+        return new Promise( async (resolve) => {
+            //console.log(`\n  before:  ${JSON.stringify(this.pendingTransactions)}`);
+
+            let transactions = { ...this.pendingTransactions};
+            for(let tr in transactions) if( tr in this.pendingTransactions) delete this.pendingTransactions[tr];
+
+            //console.log(`\n  after:  ${JSON.stringify(this.pendingTransactions)}`);
+
+            let block = new Block( Date.now(), transactions );
+            await block.mine( this.difficulty );
+            
+            console.log('\n' + block.hash + '\n' + JSON.stringify( block.transactions ) );
+            this.chain.push(block);
+
+            this.createTransaction( new Transaction('virtual', miningRewardAddress, this.miningReward) );
+
+            resolve(block);
+        });
     }
     
     createTransaction( transaction) {
-        this.pendingTransactions.push( transaction);
+        this.pendingTransactions[transaction.hash] = transaction;
     }
     
     getBalanceOfAddress( address) {
@@ -108,63 +127,51 @@ class Blockchain {
 }
 
 
-/*let Virtual = new Blockchain();
-Virtual.createTransaction(new Transaction('white43', 'blanketty46', 100));
-Virtual.createTransaction(new Transaction('jollyRoger55', 'white43', 50));
-
-
-Virtual.minePendingTransactions('white43');
-console.log('\n Balance of miner is ', Virtual.getBalanceOfAddress('white43'));
-
-Virtual.createTransaction(new Transaction('blanketty46', 'jollyRoger55', 50));
-
-Virtual.minePendingTransactions('white43');
-console.log('\n Balance of miner is ', Virtual.getBalanceOfAddress('white43'));
-*/
-
-
-// подключенные клиенты
-var clients = {};
-
-// WebSocket-сервер на порту 8081
-var webSocketServer = new WebSocketServer.Server({port: 8081});
+let Virtual = new Blockchain();
+let clients = {};
+let webSocketServer = new WebSocketServer.Server({port: 8081});
 
 webSocketServer.on('connection', function(ws) {
-  var id = Math.random();
+  let id = Math.random();
   clients[id] = ws;
   console.log("новое соединение " + id);
-
-  /*ws.on('message', function(message) {
-    console.log('получено сообщение ' + message);
-
-    for(var key in clients) {
-      clients[key].send(message);
-    }
-  });*/
 
   ws.on('close', function() {
     console.log('соединение закрыто ' + id);
     delete clients[id];
   });
-
 });
 
-
-// обычный сервер (статика) на порту 8080
-var fileServer = new Static.Server('.');
+let fileServer = new Static.Server('.');
 http.createServer(function (req, res) {
-  
   fileServer.serve(req, res);
-
 }).listen(8080);
 
 console.log("Блокчейн запущен на портах 8080, 8081");
 
-let blocks = setInterval(() => {
-  let hash = JSON.stringify( Date.now() );
-  console.log(hash);
-  for(var key in clients) {
-    clients[key].send( hash );
-  }
-}, 2000);
+
+let amount = 10;
+let transactionsFlow = setInterval(async () => {
+    Virtual.createTransaction(new Transaction('jollyRoger55', 'blanketty46', amount++) );
+    console.log('\nnew transaction: ', JSON.stringify( Virtual.pendingTransactions ));
+}, 3000);
+
+function automine(){
+    Virtual.minePendingTransactions('')
+    .then( (block) => {
+        for(var key in clients) {
+            clients[key].send( JSON.stringify( block ) );
+        }
+        setTimeout( () => {automine()}, 0);
+    } )
+}
+
+automine();
+
+
+
+
+
+
+
 
