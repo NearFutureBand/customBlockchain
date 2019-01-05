@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Item, List } from 'semantic-ui-react';
+import { List } from 'semantic-ui-react';
 
 import '../css/Transaction.less';
 
@@ -25,7 +25,7 @@ export default class Transaction extends Component {
     return (
         <List.Item className="transaction" onClick={this.toggleTrx}>
             <List.Content>
-                <List.Header as='h3'>{data.hash}</List.Header>
+                <List.Header as='h3'>{data.trx_id}</List.Header>
                 {opened &&
                     <List.Description>
                         timestamp: {data.timestamp}<br />

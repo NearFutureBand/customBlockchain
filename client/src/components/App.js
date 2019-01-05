@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Grid } from 'semantic-ui-react';
 import Block from '../components/Block';
+import Header from '../components/Header';
 
 import '../css/App.less';
 
@@ -49,12 +50,15 @@ class App extends Component {
 
     return (
       <div className="app">
+        <Header data={ { blocks: blocks.length }} />
         <Grid>
           {
             blocks.map( (el) => {
               return (
                 <Grid.Row key={el.hash}>
-                  <Block data={el} />
+                  <Grid.Column>
+                    <Block data={el} />
+                  </Grid.Column>
                 </Grid.Row>  
               )
             })

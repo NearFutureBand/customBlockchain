@@ -18,14 +18,17 @@ export default class Block extends Component {
       <Item className="block">
         <Item.Content>
           <Item.Header as="h2">{data.hash}</Item.Header>
-          <Item.Meta>timestamp: {data.timestamp}</Item.Meta>
+          <Item.Meta>
+            timestamp: {data.timestamp}<br />
+            transactions: {_.keys(data.transactions).length}
+          </Item.Meta>
           <Item.Description>
-
+            
 						<List divided relaxed>
 							{
 								_.values(data.transactions).map( (tr) => {
 									return (
-										<Transaction key={tr.hash} data={tr} />
+										<Transaction key={tr.trx_id} data={tr} />
 									)
 								})
 							}

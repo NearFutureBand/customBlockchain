@@ -2,13 +2,14 @@ const SHA256 = require('crypto-js/sha256');
 const http = require('http');
 const Static = require('node-static');
 const WebSocketServer = new require('ws');
+const _ = require('lodash');
 
 class Transaction {
     constructor(from, to, amount) {
         this.from = from;
         this.to = to;
         this.amount = amount;
-        this.hash = SHA256(from + to + amount).toString();
+        this.trx_id = SHA256(from + to + amount).toString();
         this.timestamp = Date.now();
     }
 }
@@ -20,10 +21,11 @@ class Block {
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
         this.nonce = 0;
+        this.trxsStringified = JSON.stringify(this.transactions);
     }
     
     calculateHash() {
-        return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString();
+        return SHA256(this.previousHash + this.timestamp + this.trxsStringified + this.nonce).toString();
     }
 
     mine(difficulty) {
@@ -34,15 +36,15 @@ class Block {
             }
             resolve();
         });
+    }
 
-        /*
+    approve() {
         return new Promise( (resolve) => {
             setTimeout(() => {
                 this.hash = this.calculateHash();
                 resolve();
             }, 2000);
         });
-        */
     }
     
 }
@@ -53,11 +55,11 @@ class Blockchain {
         this.difficulty = 4;
         this.timer = 2000;
         this.pendingTransactions = {};
-        this.miningReward = 10;
+        this.miningReward = 100;
     }
     
     createGenesisBlock() {
-        return new Block(0, '{"other":"Genesis Block"}');
+        return new Block(0, {});
     }
     
     getLatestBlock() {
@@ -65,28 +67,29 @@ class Blockchain {
     }
     
     minePendingTransactions (miningRewardAddress) {
-        return new Promise( async (resolve) => {
-            //console.log(`\n  before:  ${JSON.stringify(this.pendingTransactions)}`);
+        return new Promise( (resolve) => {
+            //console.log(`   before: ${JSON.stringify(this.pendingTransactions)}`);
 
             let transactions = { ...this.pendingTransactions};
-            for(let tr in transactions) if( tr in this.pendingTransactions) delete this.pendingTransactions[tr];
+            this.pendingTransactions = _.omit(this.pendingTransactions, _.keys(transactions) );
 
-            //console.log(`\n  after:  ${JSON.stringify(this.pendingTransactions)}`);
+            //console.log(`   after: ${JSON.stringify(this.pendingTransactions)}`);
 
-            let block = new Block( Date.now(), transactions );
-            await block.mine( this.difficulty );
+            let block = new Block( Date.now(), transactions, this.getLatestBlock().hash );
             
-            console.log('\n' + block.hash + '\n' + JSON.stringify( block.transactions ) );
-            this.chain.push(block);
-
-            //this.createTransaction( new Transaction('virtual', miningRewardAddress, this.miningReward) );
-
-            resolve(block);
+            //block.mine( this.difficulty )
+            block.approve()
+            .then( () => {
+                console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
+                this.chain.push(block);
+                this.createTransaction( new Transaction('virtual', miningRewardAddress, this.miningReward) );
+                resolve(block);
+            });            
         });
     }
     
     createTransaction( transaction) {
-        this.pendingTransactions[transaction.hash] = transaction;
+        this.pendingTransactions[transaction.trx_id] = transaction;
     }
     
     getBalanceOfAddress( address) {
@@ -134,17 +137,17 @@ let webSocketServer = new WebSocketServer.Server({port: 8081});
 webSocketServer.on('connection', function(ws) {
   let id = Math.random();
   clients[id] = ws;
-  console.log("новое соединение " + id);
+  console.log(`New connection ${id}`);
 
   ws.on('close', () => {
-    console.log('соединение закрыто ' + id);
+    console.log(`Connection closed ${id}`);
     delete clients[id];
   });
 
   ws.on('message', (req) => {
     const trx = JSON.parse(req);
     Virtual.createTransaction(new Transaction(trx.from, trx.to, trx.amount) );
-    console.log('\nnew transaction: ', JSON.stringify( Virtual.pendingTransactions ));
+    console.log(`\nnew transaction: ${req}`);
   });
 });
 
@@ -153,7 +156,7 @@ http.createServer(function (req, res) {
   fileServer.serve(req, res);
 }).listen(8080);
 
-console.log("Блокчейн запущен на портах 8080, 8081");
+console.log(`Blockchain runs on 8080, 8081 ports`);
 
 
 /*let amount = 10;
@@ -168,8 +171,8 @@ function automine(){
         for(var key in clients) {
             clients[key].send( JSON.stringify( block ) );
         }
-        setTimeout( () => {automine()}, 0);
-    } )
+        setTimeout( () => {automine()});
+    })
 }
 
 automine();
