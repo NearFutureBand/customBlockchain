@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import moment from 'moment';
 import { Item, List } from 'semantic-ui-react';
 import _ from 'lodash';
 import Transaction from './Transaction';
@@ -19,7 +20,7 @@ export default class Block extends Component {
         <Item.Content>
           <Item.Header as="h2">{data.hash}</Item.Header>
           <Item.Meta>
-            timestamp: {data.timestamp}<br />
+            timestamp: {moment(data.timestamp).format('MMMM Do YYYY, h:mm:ss a')}<br />
             transactions: {_.keys(data.transactions).length}
           </Item.Meta>
           <Item.Description>

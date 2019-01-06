@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import moment from 'moment';
 import { List } from 'semantic-ui-react';
 
 import '../css/Transaction.less';
@@ -28,7 +29,7 @@ export default class Transaction extends Component {
                 <List.Header as='h3'>{data.trx_id}</List.Header>
                 {opened &&
                     <List.Description>
-                        timestamp: {data.timestamp}<br />
+                        timestamp: {moment(data.timestamp).format('MMMM Do YYYY, h:mm:ss a')}<br />
                         from: {data.from}<br />
                         to: {data.to}<br />
                         amount: {data.amount}<br />
