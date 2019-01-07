@@ -1,13 +1,25 @@
 @import './variables.less';
 
 header{
-    justify-content: center;
+    
     width: 100%;
-    padding: @padding;
     position: fixed;
-    top: 0;
+    top: -10vh;
+    height: 12vh;
+    opacity: 0;
+    z-index: 2;
     left: 0;
     background-color: white;
-    z-index: 1;
+    padding: @padding;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    transition: all 0.3s ease;
     box-shadow: 1px 1px 100px rgba(0,0,0,.2);
+
+}
+header:hover{
+    top: 0;
+    opacity: 1;
+    height: 10vh;
 }

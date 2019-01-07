@@ -3,7 +3,7 @@ import { Grid } from 'semantic-ui-react';
 import _ from 'lodash';
 import Block from '../components/Block';
 
-import Header from '../components/Header';
+import ExplorerStats from './ExplorerStats';
 
 export default class Explorer extends Component {
   constructor(props) {
@@ -69,7 +69,7 @@ export default class Explorer extends Component {
 
     return (
       <div className="explorer">
-        <Header
+        <ExplorerStats
             data={{ 
               blocks: blocks.length,
               trxs

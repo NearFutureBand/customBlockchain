@@ -1,29 +1,19 @@
-import React, { Component } from "react";
-import { Statistic } from 'semantic-ui-react';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 import '../css/Header.less';
 
 export default class Header extends Component {
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
   }
-
   render() {
-    const items = [
-      { key: 'blocks', label: 'Blocks', value: this.props.data.blocks },
-      { key: 'views', label: 'Transactions', value: this.props.data.trxs },
-      { key: 'producer', label: 'Last block producer', value: 'virtualchain'}
-    ]
-
     return (
       <header>
-        <Statistic.Group
-          items={items}
-          widths="three"
-          size="tiny"
-        />
+        <Link to="/">Home</Link>
+        <Link to="/explorer">Explorer</Link>
+        <Link to="/hash-maker">Hash maker</Link>
       </header>
-    );
+    )
   }
-
 }
