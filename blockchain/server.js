@@ -16,7 +16,7 @@ webSocketServer.on('connection', (ws) => {
 
   ws.on('message', (req) => {
     const trx = JSON.parse(req);
-    Virtual.createTransaction(new Transaction(trx.from, trx.to, trx.amount) );
+    Virtual.createTransaction(new Transaction(trx.from, trx.to, trx.amount), trx.privateKey );
     console.log(`\nnew transaction: ${req}`);
   });
 });

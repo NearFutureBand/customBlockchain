@@ -33,6 +33,7 @@ export default class Transaction extends Component {
                         from: {data.from}<br />
                         to: {data.to}<br />
                         amount: {data.amount}<br />
+                        signature: {data.signature}<br />
                     </List.Description>
                 }
             </List.Content>

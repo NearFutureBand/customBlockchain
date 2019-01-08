@@ -20,7 +20,7 @@ class App extends Component {
         <BrowserRouter>
           <div>
             <Header />
-            <Route path="/" exact component={HashMaker} />
+            <Route path="/" exact component={Explorer} />
             <Route path="/explorer" component={Explorer} />
             <Route path="/hash-maker" component={HashMaker} />
           </div>
