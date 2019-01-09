@@ -7,12 +7,11 @@ const virtualChainPrivateKey = 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf325
 
 
 class Transaction {
-  constructor( { type, from, to, amount, publicKey, nickname }) {
+  constructor( { type, from, to, amount, nickname }) {
 
     if(!type) throw new Error('Type of transcation is required!');
     this.type = type; //required
 
-    this.publicKey = publicKey;
     this.nickname = nickname;
     this.from = from;
     this.to = to;
@@ -23,9 +22,10 @@ class Transaction {
   }
 
   calculateHash() {
+    if( ! this.from ) throw new Error('Property "from" is not provided!');
+
     if(this.type === 'transfer') {
 
-      if( ! this.from ) throw new Error('Property "from" is not provided!');
       if( ! this.to ) throw new Error('Property "to" is not provied!');
       if( ! this.amount ) throw new Error('Property "amount" is not provided!');
 
@@ -33,16 +33,14 @@ class Transaction {
 
     } else if (this.type === 'createAccount') {
 
-      if( ! this.publicKey ) throw new Error('public key is not provided!');
       if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
 
-      return SHA256(this.publicKey + this.nickname).toString();
+      return SHA256(this.from + this.nickname).toString();
     }
   }
 
   sign(privateKey) {
     const signingKey = ec.keyFromPrivate(privateKey);
-
     if(signingKey.getPublic('hex') !== this.from) {
       throw new Error('One cannot sign transactions for other wallets!');
     }
@@ -56,8 +54,8 @@ class Transaction {
       throw new Error('No signature in this transaction');
     }
 
-    const publickKey = ec.keyFromPublic(this.from, 'hex');
-    return publickKey.verify(this.calculateHash(), this.signature);
+    const publicKey = ec.keyFromPublic(this.from, 'hex');
+    return publicKey.verify(this.calculateHash(), this.signature);
   }
 }
 

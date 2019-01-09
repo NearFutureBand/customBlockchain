@@ -1,6 +1,7 @@
 const WebSocketServer = new require('ws');
 const express = require('express');
-const { Virtual, Transaction } = require('./core');
+const { Virtual} = require('./core');
+const { Transaction } = require('./blockchain');
 
 let clients = {};
 let webSocketServer = new WebSocketServer.Server({port: 8081});
@@ -30,10 +31,11 @@ webSocketServer.on('connection', (ws) => {
       );
 
     } else if( trx.type === 'createAccount') {
-      
+
       Virtual.createTransaction(
         new Transaction({
-          public: trx.public,
+          type: 'createAccount',
+          from: trx.from,
           nickname: trx.nickname
         }),
         trx.privateKey
