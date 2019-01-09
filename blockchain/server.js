@@ -16,8 +16,31 @@ webSocketServer.on('connection', (ws) => {
 
   ws.on('message', (req) => {
     const trx = JSON.parse(req);
-    Virtual.createTransaction(new Transaction(trx.from, trx.to, trx.amount), trx.privateKey );
-    console.log(`\nnew transaction: ${req}`);
+
+    if(trx.type === 'transfer') {
+
+      Virtual.createTransaction(
+        new Transaction({
+          type: 'transfer',
+          from: trx.from, 
+          to: trx.to, 
+          amount: trx.amount
+        }),
+        trx.privateKey
+      );
+
+    } else if( trx.type === 'createAccount') {
+      
+      Virtual.createTransaction(
+        new Transaction({
+          public: trx.public,
+          nickname: trx.nickname
+        }),
+        trx.privateKey
+      );
+    }
+
+    console.log(`\nnew transaction: ${req}`);    
   });
 });
 

@@ -13,24 +13,31 @@
  * 
  * 
  */
-const { Blockchain, Transaction } = require('./blockchain');
-const EC = require('elliptic').ec;
-const ec = new EC('secp256k1');
+const { Blockchain } = require('./blockchain');
+const virtualChainPublicKey = '04f4d75d6390a9455629786fd0fa20268d30a1e989989925263808b0f722fda2e886bb347eb5811e43252816588d93334820af435317359b00637ea10b677a98ce';
+const virtualChainPrivateKey = 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf32525f4c23f3c1c4e16';
 
-const myKey = ec.keyFromPrivate('1eefe1060cee7c88a5f19253b11075d1d42e1fea5c8c6b65ceda1a290fdc6e16');
-const myWalletAddress = myKey.getPublic('hex');
-
+/**
+ *  Instatiating the new entity of a blockchain
+ */
 let Virtual = new Blockchain();
 
 module.exports = {
   Virtual,
-  Transaction
+  virtualChainPrivateKey,
+  virtualChainPublicKey
 }
 
+/**
+ * All connections to the blockchain's node
+ */
 let { clients } = require('./server');
 
+/**
+ * Calls mining function consistently to mine blocks one by one - local mining, 'one node' mode
+ */
 const automine = () => {
-  Virtual.minePendingTransactions('04aa058ae182de249e2a19790679c85d8d5ab4abb668188dbe932f2be369c44419f64e5c01fe047515d091a3724326b9e90c0ead92c1b91c6aef191e58f69fdc52')
+  Virtual.minePendingTransactions(virtualChainPublicKey)
   .then( (block) => {
     for(var key in clients) {
       clients[key].send( JSON.stringify( block ) );
@@ -39,8 +46,11 @@ const automine = () => {
   })
 }
 
+/**
+ * Start automining
+ */
 automine();
-console.log('node started');
+console.log('blockchain node started');
 
 
 

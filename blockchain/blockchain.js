@@ -2,25 +2,49 @@ const SHA256 = require('crypto-js/sha256');
 const _ = require('lodash');
 const EC = require('elliptic').ec;
 const ec = new EC('secp256k1');
+const virtualChainPublicKey = '04f4d75d6390a9455629786fd0fa20268d30a1e989989925263808b0f722fda2e886bb347eb5811e43252816588d93334820af435317359b00637ea10b677a98ce';
+const virtualChainPrivateKey = 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf32525f4c23f3c1c4e16';
+
 
 class Transaction {
-  constructor(from, to, amount) {
+  constructor( { type, from, to, amount, publicKey, nickname }) {
+
+    if(!type) throw new Error('Type of transcation is required!');
+    this.type = type; //required
+
+    this.publicKey = publicKey;
+    this.nickname = nickname;
     this.from = from;
     this.to = to;
     this.amount = amount;
+
     this.trx_id = this.calculateHash();
     this.timestamp = Date.now();
   }
 
   calculateHash() {
-    return SHA256(this.from + this.to + this.amount).toString();
+    if(this.type === 'transfer') {
+
+      if( ! this.from ) throw new Error('Property "from" is not provided!');
+      if( ! this.to ) throw new Error('Property "to" is not provied!');
+      if( ! this.amount ) throw new Error('Property "amount" is not provided!');
+
+      return SHA256(this.from + this.to + this.amount).toString();
+
+    } else if (this.type === 'createAccount') {
+
+      if( ! this.publicKey ) throw new Error('public key is not provided!');
+      if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
+
+      return SHA256(this.publicKey + this.nickname).toString();
+    }
   }
 
   sign(privateKey) {
     const signingKey = ec.keyFromPrivate(privateKey);
 
     if(signingKey.getPublic('hex') !== this.from) {
-      throw new Error('You cannot sign transactions for other wallets!');
+      throw new Error('One cannot sign transactions for other wallets!');
     }
 
     const sig = signingKey.sign(this.trx_id, 'base64');
@@ -28,7 +52,7 @@ class Transaction {
   }
 
   isValid() {
-    if(!this.signature || this.signature.length === 0) {
+    if( !this.signature || this.signature.length === 0) {
       throw new Error('No signature in this transaction');
     }
 
@@ -108,28 +132,28 @@ class Blockchain {
       .then( () => {
         console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
         this.chain.push(block);
-        this.createTransaction( new Transaction(
-          '04f4d75d6390a9455629786fd0fa20268d30a1e989989925263808b0f722fda2e886bb347eb5811e43252816588d93334820af435317359b00637ea10b677a98ce',
-          miningRewardAddress, 
-          this.miningReward
-        ), 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf32525f4c23f3c1c4e16' );
+        this.createTransaction(
+          new Transaction({
+            type: 'transfer',
+            from: virtualChainPublicKey,
+            to: miningRewardAddress,
+            amount: this.miningReward
+          }),
+          virtualChainPrivateKey 
+        );
         resolve(block);
-      });            
+      });
     });
   }
   
   createTransaction( transaction, privateKey) {
     transaction.sign(privateKey);
-
-    if(!transaction.from || !transaction.to) {
-      throw new Error('Transaction must include from and to address');
-    }
-
-    if(!transaction.isValid()) {
-      throw new Error('Cannot add invalid transaction to chain');
-    }
-
+    if(!transaction.isValid()) throw new Error('Cannot add invalid transaction to chain');
     this.pendingTransactions[transaction.trx_id] = transaction;
+  }
+
+  isAccountExist() {
+
   }
   
   /*getBalanceOfAddress( address) {
@@ -150,8 +174,8 @@ class Blockchain {
     return balance;
   }*/
   
-  isChainValid() {
-    /*let status = {
+  /*isChainValid() {
+    let status = {
         isValid: true,
     }
     
@@ -165,11 +189,11 @@ class Blockchain {
         status.isValid = false;
       }
     }
-    return status;*/
-  }
+    return status;
+  }*/
 }
 
 module.exports = {
-    Blockchain,
-    Transaction
+  Blockchain,
+  Transaction
 }
