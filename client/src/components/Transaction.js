@@ -26,14 +26,15 @@ export default class Transaction extends Component {
     return (
         <List.Item className="transaction" onClick={this.toggleTrx}>
             <List.Content>
-                <List.Header as='h3'>{data.trx_id}</List.Header>
-                {opened &&
+                <List.Header as='h3'>{data.type} {data.trx_id}</List.Header>
+                { opened &&
                     <List.Description>
-                        timestamp: {moment(data.timestamp).format('MMMM Do YYYY, h:mm:ss a')}<br />
-                        from: {data.from}<br />
-                        to: {data.to}<br />
-                        amount: {data.amount}<br />
-                        signature: {data.signature}<br />
+                        <span>timestamp: {moment(data.timestamp).format('MMMM Do YYYY, h:mm:ss a')}</span>
+                        <span>from: {data.from}</span>
+                        { data.to && <span>to: {data.to}</span> }
+                        { data.amount && <span>amount: {data.amount}</span> }
+                        { data.nickname && <span>nickname: {data.nickname}</span> }
+                        <span>signature: {data.signature}</span>
                     </List.Description>
                 }
             </List.Content>
