@@ -86,7 +86,14 @@ class Block {
       setTimeout(() => {
         this.hash = this.calculateHash();
         resolve();
-      }, 2000);
+      }, 1000);
+    });
+  }
+
+  forceApprove() {
+    return new Promise( (resolve) => {
+      this.hash = this.calculateHash();
+      resolve();
     });
   }
 
@@ -127,6 +134,7 @@ class Blockchain {
       
       //block.mine( this.difficulty )
       block.approve()
+      //block.forceApprove()
       .then( () => {
         console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
         this.chain.push(block);
@@ -139,6 +147,7 @@ class Blockchain {
           }),
           virtualChainPrivateKey 
         );
+        //console.log(this.pendingTransactions);
         resolve(block);
       });
     });
@@ -150,8 +159,22 @@ class Blockchain {
     this.pendingTransactions[transaction.trx_id] = transaction;
   }
 
-  isAccountExist() {
+  isAccountExist(publicKey, nickname) {
+    this.runThroughTransactions((trx, block) => {
+      if(trx.type === 'createAccount') {
+        if( trx.from === publicKey && trx.nickname === nickname ) {
+          console.log('correct', trx);
+        }
+      }
+    })
+  }
 
+  runThroughTransactions(action) {
+    for(const block of this.chain) {
+      for(const trx in block.transactions) {
+        action(block.transactions[trx], block);
+      }
+    }
   }
   
   /*getBalanceOfAddress( address) {
