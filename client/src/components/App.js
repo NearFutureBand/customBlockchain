@@ -3,7 +3,7 @@ import { BrowserRouter, Route } from 'react-router-dom';
 import Explorer from './Explorer';
 import Client from './Client';
 import Header from './Header';
-
+import TransactionCreator from './TransactionCreator';
 import HashMaker from "./HashMaker";
 import '../css/App.less';
 
@@ -20,7 +20,7 @@ class App extends Component {
         <BrowserRouter>
           <div>
             <Header />
-            <Route path="/" exact component={Explorer} />
+            <Route path="/" exact component={TransactionCreator} />
             <Route path="/explorer" component={Explorer} />
             <Route path="/hash-maker" component={HashMaker} />
           </div>

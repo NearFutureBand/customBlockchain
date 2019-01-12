@@ -37,6 +37,7 @@ module.exports = {
     })
   ],
   devServer: {
-    port: 8082
+    port: 8082,
+    historyApiFallback: true
   }
 };

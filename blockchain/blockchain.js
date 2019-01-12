@@ -93,7 +93,7 @@ class Block {
       setTimeout(() => {
         this.hash = this.calculateHash();
         resolve();
-      }, 2000);
+      }, 4000);
     });
   }
 
