@@ -36,7 +36,8 @@ webSocketServer.on('connection', (ws) => {
         new Transaction({
           type: 'createAccount',
           from: trx.from,
-          nickname: trx.nickname
+          nickname: trx.nickname,
+          publicKey: trx.publicKey
         }),
         trx.privateKey
       );

@@ -11,32 +11,35 @@ class Transaction {
 
     if(!type) throw new Error('Type of transcation is required!');
     this.type = type; //required
+    this.from = from; //required
 
     this.nickname = nickname;
     this.publicKey = publicKey
-    this.from = from;
+    
     this.to = to;
     this.amount = amount;
 
-    this.trx_id = this.calculateHash();
     this.timestamp = Date.now();
+    this.trx_id = this.calculateHash();
+    
   }
 
   calculateHash() {
+    if( ! this.type ) throw new Error('Transaction should contain type!');
     if( ! this.from ) throw new Error('Property "from" is not provided!');
 
     if(this.type === 'transfer') {  
       if( ! this.to ) throw new Error('Property "to" is not provied!');
       if( ! this.amount ) throw new Error('Property "amount" is not provided!');
 
-      return SHA256(this.from + this.to + this.amount).toString();
+      return SHA256(this.from + this.to + this.amount + this.timestamp).toString();
 
     } else if (this.type === 'createAccount') {
 
       if( ! this.publicKey ) throw new Error('Public key is not provided for new account!')
       if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
 
-      return SHA256(this.from + this.nickname + this.publicKey).toString();
+      return SHA256(this.from + this.nickname + this.publicKey + this.timestamp).toString();
     }
   }
 
@@ -87,7 +90,7 @@ class Block {
       setTimeout(() => {
         this.hash = this.calculateHash();
         resolve();
-      }, 1000);
+      }, 2000);
     });
   }
 
@@ -105,7 +108,6 @@ class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
     this.difficulty = 4;
-    this.timer = 2000;
     this.pendingTransactions = {};
     this.miningReward = 100;
   }

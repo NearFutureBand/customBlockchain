@@ -37,7 +37,7 @@ let { clients } = require('./server');
  * Calls mining function consistently to mine blocks one by one - local mining, 'one node' mode
  */
 const automine = () => {
-  Virtual.minePendingTransactions(virtualChainPublicKey)
+  Virtual.minePendingTransactions('virtualchain')
   .then( (block) => {
     for(var key in clients) {
       clients[key].send( JSON.stringify( block ) );
