@@ -23,8 +23,9 @@ class Transaction {
   }
 
   calculateHash() {
-    if(this.type === 'transfer') {
-      if( ! this.from ) throw new Error('Property "from" is not provided!');
+    if( ! this.from ) throw new Error('Property "from" is not provided!');
+
+    if(this.type === 'transfer') {  
       if( ! this.to ) throw new Error('Property "to" is not provied!');
       if( ! this.amount ) throw new Error('Property "amount" is not provided!');
 
@@ -32,15 +33,16 @@ class Transaction {
 
     } else if (this.type === 'createAccount') {
 
+      if( ! this.publicKey ) throw new Error('Public key is not provided for new account!')
       if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
 
-      return SHA256(this.from + this.nickname).toString();
+      return SHA256(this.from + this.nickname + this.publicKey).toString();
     }
   }
 
-  sign(privateKey) {
+  sign(publicKey, privateKey) {
     const signingKey = ec.keyFromPrivate(privateKey);
-    if(signingKey.getPublic('hex') !== this.from) {
+    if(signingKey.getPublic('hex') !== publicKey) {
       throw new Error('One cannot sign transactions for other wallets!');
     }
 
@@ -48,14 +50,14 @@ class Transaction {
     this.signature = sig.toDER('hex');
   }
 
-  isValid() {
+  /*isValid(publicKey) {
+
     if( !this.signature || this.signature.length === 0) {
       throw new Error('No signature in this transaction');
     }
 
-    const publicKey = ec.keyFromPublic(this.from, 'hex');
     return publicKey.verify(this.calculateHash(), this.signature);
-  }
+  }*/
 }
 
 class Block {
@@ -89,21 +91,14 @@ class Block {
     });
   }
 
-  forceApprove() {
-    return new Promise( (resolve) => {
-      this.hash = this.calculateHash();
-      resolve();
-    });
-  }
-
-  hasValidTransactions() {
+  /*hasValidTransactions() {
     for( const trx of this.transactions) {
       if(!this.transactions[trx].isValid()){
         return false;
       }
     }
     return true;
-  }
+  }*/
 }
 
 class Blockchain {
@@ -118,11 +113,11 @@ class Blockchain {
   createGenesisBlock() {
     let firstTransaction = new Transaction({
       type: 'createAccount',
-      from: virtualChainPublicKey,
+      from: 'virtualchain',
       nickname: 'virtualchain',
       publicKey: virtualChainPublicKey
     });
-    firstTransaction.sign(virtualChainPrivateKey);
+    firstTransaction.sign(virtualChainPublicKey, virtualChainPrivateKey );
 
     return new Block(0, {
       firstTransaction
@@ -143,54 +138,58 @@ class Blockchain {
       
       //block.mine( this.difficulty )
       block.approve()
-      //block.forceApprove()
       .then( () => {
         console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
         this.chain.push(block);
         this.createTransaction(
           new Transaction({
             type: 'transfer',
-            from: virtualChainPublicKey,
+            from: 'virtualchain',
             to: miningRewardAddress,
             amount: this.miningReward
           }),
           virtualChainPrivateKey 
         );
-        //console.log(this.pendingTransactions);
         resolve(block);
       });
     });
   }
   
   createTransaction( transaction, privateKey) {
-    if( transaction.type === 'transfer' && !this.isAccountExist(transaction.to) ) {
+    
+    const account = this.getAccount(transaction.from);
+    if( !account ) {
+      throw new Error(`This account ${transaction.from} doesn\'t exist!`);
+    }
+
+    if( transaction.type === 'transfer' && !this.getAccount(transaction.to) ) {
       throw new Error('Recevier\'s account doesn\'t exist!');
     }
 
-    const sender = ec.keyFromPrivate(privateKey).getPublic('hex');
-    if( !this.isAccountExist( sender )) {
-      throw new Error(`This account ${sender} doesn\'t exist!`);
+    transaction.sign(account.publicKey, privateKey);
+
+    if( ! transaction.signature || transaction.signature.length === 0) {
+      throw new Error('No signature in this transaction');
     }
 
-    transaction.sign(privateKey);
-
-    if(!transaction.isValid()) {
-      throw new Error('Cannot add invalid transaction to chain');
+    const key = ec.keyFromPublic( account.publicKey, 'hex' );
+    if( ! key.verify(transaction.calculateHash(), transaction.signature) ) {
+      throw new Error('Transaction verifying failed');
     }
 
     this.pendingTransactions[transaction.trx_id] = transaction;
   }
 
-  isAccountExist(publicKey) {
+  getAccount(nickname) {
     for(const block of this.chain) {
       for(const trx in block.transactions) {
         const tr = block.transactions[trx];
-        if( tr.type === 'createAccount' && tr.publicKey === publicKey) {
-          return true;
+        if( tr.type === 'createAccount' && tr.nickname === nickname ) {
+          return tr;
         }
       }
     }
-    return false;
+    return null;
   }
   
   /*getBalanceOfAddress( address) {
