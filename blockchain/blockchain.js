@@ -7,12 +7,13 @@ const virtualChainPrivateKey = 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf325
 
 
 class Transaction {
-  constructor( { type, from, to, amount, nickname }) {
+  constructor( { type, from, to, amount, nickname, publicKey }) {
 
     if(!type) throw new Error('Type of transcation is required!');
     this.type = type; //required
 
     this.nickname = nickname;
+    this.publicKey = publicKey
     this.from = from;
     this.to = to;
     this.amount = amount;
@@ -22,10 +23,8 @@ class Transaction {
   }
 
   calculateHash() {
-    if( ! this.from ) throw new Error('Property "from" is not provided!');
-
     if(this.type === 'transfer') {
-
+      if( ! this.from ) throw new Error('Property "from" is not provided!');
       if( ! this.to ) throw new Error('Property "to" is not provied!');
       if( ! this.amount ) throw new Error('Property "amount" is not provided!');
 
@@ -60,7 +59,7 @@ class Transaction {
 }
 
 class Block {
-  constructor(timestamp, transactions, previousHash = '') {
+  constructor(timestamp, transactions, previousHash) {
     this.timestamp = timestamp;
     this.transactions = transactions;
     this.previousHash = previousHash;
@@ -117,7 +116,17 @@ class Blockchain {
   }
   
   createGenesisBlock() {
-    return new Block(0, {});
+    let firstTransaction = new Transaction({
+      type: 'createAccount',
+      from: virtualChainPublicKey,
+      nickname: 'virtualchain',
+      publicKey: virtualChainPublicKey
+    });
+    firstTransaction.sign(virtualChainPrivateKey);
+
+    return new Block(0, {
+      firstTransaction
+    },'');
   }
   
   getLatestBlock() {
@@ -154,27 +163,34 @@ class Blockchain {
   }
   
   createTransaction( transaction, privateKey) {
+    if( transaction.type === 'transfer' && !this.isAccountExist(transaction.to) ) {
+      throw new Error('Recevier\'s account doesn\'t exist!');
+    }
+
+    const sender = ec.keyFromPrivate(privateKey).getPublic('hex');
+    if( !this.isAccountExist( sender )) {
+      throw new Error(`This account ${sender} doesn\'t exist!`);
+    }
+
     transaction.sign(privateKey);
-    if(!transaction.isValid()) throw new Error('Cannot add invalid transaction to chain');
+
+    if(!transaction.isValid()) {
+      throw new Error('Cannot add invalid transaction to chain');
+    }
+
     this.pendingTransactions[transaction.trx_id] = transaction;
   }
 
-  isAccountExist(publicKey, nickname) {
-    this.runThroughTransactions((trx, block) => {
-      if(trx.type === 'createAccount') {
-        if( trx.from === publicKey && trx.nickname === nickname ) {
-          console.log('correct', trx);
-        }
-      }
-    })
-  }
-
-  runThroughTransactions(action) {
+  isAccountExist(publicKey) {
     for(const block of this.chain) {
       for(const trx in block.transactions) {
-        action(block.transactions[trx], block);
+        const tr = block.transactions[trx];
+        if( tr.type === 'createAccount' && tr.publicKey === publicKey) {
+          return true;
+        }
       }
     }
+    return false;
   }
   
   /*getBalanceOfAddress( address) {
