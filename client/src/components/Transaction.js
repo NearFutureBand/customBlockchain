@@ -35,6 +35,7 @@ export default class Transaction extends Component {
                         <span>from: {data.from}</span>
                         { data.amount && <span>amount: {data.amount}</span> }
                         <span>signature: {data.signature}</span>
+                        <span>memo: {data.memo}</span>
                     </List.Description>
                 }
             </List.Content>

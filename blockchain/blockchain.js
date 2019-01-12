@@ -7,11 +7,12 @@ const virtualChainPrivateKey = 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf325
 
 
 class Transaction {
-  constructor( { type, from, to, amount, nickname, publicKey }) {
+  constructor( { type, from, to, amount, nickname, publicKey, memo }) {
 
     if(!type) throw new Error('Type of transcation is required!');
     this.type = type; //required
     this.from = from; //required
+   
 
     this.nickname = nickname;
     this.publicKey = publicKey
@@ -20,6 +21,7 @@ class Transaction {
     this.amount = amount;
 
     this.timestamp = Date.now();
+    this.memo = memo;
     this.trx_id = this.calculateHash();
     
   }
@@ -28,18 +30,19 @@ class Transaction {
     if( ! this.type ) throw new Error('Transaction should contain type!');
     if( ! this.from ) throw new Error('Property "from" is not provided!');
 
-    if(this.type === 'transfer') {  
+    const str = this.from + this.timestamp + this.memo;
+    if(this.type === 'transfer') {
       if( ! this.to ) throw new Error('Property "to" is not provied!');
       if( ! this.amount ) throw new Error('Property "amount" is not provided!');
 
-      return SHA256(this.from + this.to + this.amount + this.timestamp).toString();
+      return SHA256(this.to + this.amount + str).toString();
 
     } else if (this.type === 'createAccount') {
 
       if( ! this.publicKey ) throw new Error('Public key is not provided for new account!')
       if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
 
-      return SHA256(this.from + this.nickname + this.publicKey + this.timestamp).toString();
+      return SHA256(this.nickname + this.publicKey + str).toString();
     }
   }
 
@@ -148,7 +151,8 @@ class Blockchain {
             type: 'transfer',
             from: 'virtualchain',
             to: miningRewardAddress,
-            amount: this.miningReward
+            amount: this.miningReward,
+            memo: 'mining reward'
           }),
           virtualChainPrivateKey 
         );

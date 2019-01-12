@@ -25,7 +25,8 @@ webSocketServer.on('connection', (ws) => {
           type: 'transfer',
           from: trx.from, 
           to: trx.to, 
-          amount: trx.amount
+          amount: trx.amount,
+          memo: trx.memo
         }),
         trx.privateKey
       );
@@ -37,7 +38,8 @@ webSocketServer.on('connection', (ws) => {
           type: 'createAccount',
           from: trx.from,
           nickname: trx.nickname,
-          publicKey: trx.publicKey
+          publicKey: trx.publicKey,
+          memo: trx.memo
         }),
         trx.privateKey
       );
