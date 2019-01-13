@@ -18,6 +18,11 @@ export default class ExplorerGraph extends Component {
 
   componentDidMount = () => {
     this.connectToBlockchain();
+
+    d3.select('#svg').append('g').attr('class', 'transactions');
+    d3.select('#svg').append('line').attr('class', 'blocks-line');
+    d3.select('#svg').append('g').attr('class', 'blocks');
+    
   }
 
   connectToBlockchain = () => {
@@ -63,11 +68,20 @@ export default class ExplorerGraph extends Component {
 
   renderGraph = () => {
     d3.select('#svg').attr('height', this.state.blocks.length * 200 + 500);
-    let circles = d3.select('#svg').selectAll('circle.block').data(this.state.blocks); 
+    
+    d3.select('line.blocks-line')
+      .attr('x1', '100')
+      .attr('y1', '50')
+      .attr('x2', '100')
+      .attr('stroke', 'gray')
+      .attr('y2', this.state.blocks.length*200 + 50);
+    
+    /* Blocks */
+    let circles = d3.select('g.blocks').selectAll('circle.block').data(this.state.blocks); 
     
     circles.enter().append('circle')
       .attr('class', 'block')
-      .attr('cx', '20%')
+      .attr('cx', '100')
       .attr('cy', (d,i) => { return i*200 + 50; })
       .attr('r', (d,i) => { return _.keys(d.transactions).length * this.circleSizeRate })
       .attr('fill', 'coral')
@@ -75,6 +89,38 @@ export default class ExplorerGraph extends Component {
       .attr('stroke-width', 4);
 
     circles.exit().remove();
+
+    /* Transactions */
+    let trxGroups = d3.select('g.transactions').selectAll('g.trxs').data(this.state.blocks);
+    trxGroups.enter().append('g')
+      .attr('class', (d,i) => `trxs trxs-${i}` )
+      .append('line')
+        .attr('class','trxs-line')
+    trxGroups.exit().remove();
+
+
+    this.state.blocks.forEach( (block, i) => {
+
+      d3.select(`g.trxs.trxs-${i}>line.trxs-line`)
+      .attr('x1', '100')
+      .attr('y1', (d,j) => i*200 + 50 )
+      .attr('x2', _.keys( block.transactions).length*150 + 100 )
+      .attr('y2', (d,j) => i*200 + 50 )
+      .attr('stroke', 'gray');
+
+      circles = d3.select(`g.trxs.trxs-${i}`).selectAll('circle.trx').data( _.values(block.transactions));
+      circles.enter().append('circle')
+        .attr('class','trx')
+        .attr('cx', (d,j) => (j+1)*150 + 100 )
+        .attr('cy', (d,j) => i*200 + 50 )
+        .attr('r', 20)
+        .attr('fill', 'rgb(126, 143, 232)')
+        .attr('stroke-width', 2)
+        .attr('stroke', 'white');
+      circles.exit().remove();
+    });
+    
+
   }
 
 
