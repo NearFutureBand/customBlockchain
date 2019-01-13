@@ -20,7 +20,7 @@ webSocketServer.on('connection', (ws) => {
 
     if(trx.type === 'transfer') {
 
-      Virtual.createTransaction(
+      Virtual.addTransaction(
         new Transaction({
           type: 'transfer',
           from: trx.from, 
@@ -33,7 +33,7 @@ webSocketServer.on('connection', (ws) => {
 
     } else if( trx.type === 'createAccount') {
 
-      Virtual.createTransaction(
+      Virtual.addTransaction(
         new Transaction({
           type: 'createAccount',
           from: trx.from,

@@ -8,6 +8,20 @@ const virtualChainPrivateKey = 'd5db7c72e97476e3d9d2fb4a77ddbd86a68d25f61cfaf325
 
 class Transaction {
   constructor( { type, from, to, amount, nickname, publicKey, memo }) {
+  //constructor( trx ) {
+    this.transactionTypes = {
+      transfer: {
+        from: null,
+        publicKey: null,
+        nickname: null,
+        timestamp: null
+      },
+      createAccount: {
+        from: null,
+        to: null,
+        amount: null
+      }
+    }
 
     if(!type) throw new Error('Type of transcation is required!');
     this.type = type; //required
@@ -20,29 +34,29 @@ class Transaction {
     this.to = to;
     this.amount = amount;
 
-    this.timestamp = Date.now();
-    this.memo = memo;
-    this.trx_id = this.calculateHash();
     
+    this.memo = memo;
+    this.timestamp = Date.now();
+    this.trx_id = this.calculateHash();
+  }
+
+  // on development
+  validateStructure(trx) {
+    if( ! trx.type ) throw new Error('Transaction should contain type!');
+
+    const test = { ...this.transactionTypes[trx.type], ...trx };
+    for(const prop of test) {
+      if( !test[prop] ) throw new Error(`The required '${prop}' property is not provided!`);
+    }
+
+    return true;
   }
 
   calculateHash() {
-    if( ! this.type ) throw new Error('Transaction should contain type!');
-    if( ! this.from ) throw new Error('Property "from" is not provided!');
-
-    const str = this.from + this.timestamp + this.memo;
-    if(this.type === 'transfer') {
-      if( ! this.to ) throw new Error('Property "to" is not provied!');
-      if( ! this.amount ) throw new Error('Property "amount" is not provided!');
-
-      return SHA256(this.to + this.amount + str).toString();
-
-    } else if (this.type === 'createAccount') {
-
-      if( ! this.publicKey ) throw new Error('Public key is not provided for new account!')
-      if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
-
-      return SHA256(this.nickname + this.publicKey + str).toString();
+    if( this.validateProps() ) {
+      const str = this.from + this.timestamp + this.memo;
+      if(this.type === 'transfer') return SHA256(this.to + this.amount + str).toString();
+      else if (this.type === 'createAccount') return SHA256(this.nickname + this.publicKey + str).toString();
     }
   }
 
@@ -56,14 +70,22 @@ class Transaction {
     this.signature = sig.toDER('hex');
   }
 
-  /*isValid(publicKey) {
+  validateProps() {
+    if( ! this.from ) throw new Error('Property "from" is not provided!');
 
-    if( !this.signature || this.signature.length === 0) {
-      throw new Error('No signature in this transaction');
+    if(this.type === 'transfer') {
+      if( ! this.to ) throw new Error('Property "to" is not provied!');
+      if( ! this.amount ) throw new Error('Property "amount" is not provided!');
+
+      return true;
+    } else if (this.type === 'createAccount') {
+
+      if( ! this.publicKey ) throw new Error('Public key is not provided for new account!')
+      if( ! this.nickname ) throw new Error('Property "nickname" is not provied!');
+
+      return true;
     }
-
-    return publicKey.verify(this.calculateHash(), this.signature);
-  }*/
+  }
 }
 
 class Block {
@@ -79,6 +101,7 @@ class Block {
   calculateHash() {
     return SHA256(this.previousHash + this.timestamp + this.trxsStringified + this.nonce).toString();
   }
+
   mine(difficulty) {
     return new Promise( (resolve) => {
       while( this.hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
@@ -88,6 +111,7 @@ class Block {
       resolve();
     });
   }
+
   approve() {
     return new Promise( (resolve) => {
       setTimeout(() => {
@@ -97,14 +121,14 @@ class Block {
     });
   }
 
-  /*hasValidTransactions() {
-    for( const trx of this.transactions) {
+  hasValidTransactions() {
+    /*for( const trx of this.transactions) {
       if(!this.transactions[trx].isValid()){
         return false;
       }
     }
-    return true;
-  }*/
+    return true;*/
+  }
 }
 
 class Blockchain {
@@ -146,7 +170,7 @@ class Blockchain {
       .then( () => {
         console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
         this.chain.push(block);
-        this.createTransaction(
+        this.addTransaction(
           new Transaction({
             type: 'transfer',
             from: 'virtualchain',
@@ -161,8 +185,13 @@ class Blockchain {
     });
   }
   
-  createTransaction( transaction, privateKey) {
-    
+  addTransaction( transaction, privateKey) {
+    if( this.validateIncomingTransaction( transaction, privateKey ) ) {
+      this.pendingTransactions[transaction.trx_id] = transaction;
+    }
+  }
+
+  validateIncomingTransaction(transaction, privateKey) {
     const account = this.getAccount(transaction.from);
     if( !account ) {
       throw new Error(`This account ${transaction.from} doesn\'t exist!`);
@@ -183,7 +212,7 @@ class Blockchain {
       throw new Error('Transaction verifying failed');
     }
 
-    this.pendingTransactions[transaction.trx_id] = transaction;
+    return true;
   }
 
   getAccount(nickname) {
@@ -198,8 +227,8 @@ class Blockchain {
     return null;
   }
   
-  /*getBalanceOfAddress( address) {
-    let balance = 0;
+  getBalanceOfAddress( address) {
+    /*let balance = 0;
     
     for(let i = 0; i < this.chain.length; i++) {
       for(let j = 0; j < this.chain[i].transactions.length; j++) {
@@ -213,11 +242,11 @@ class Blockchain {
       }
     }
     
-    return balance;
-  }*/
+    return balance;*/
+  }
   
-  /*isChainValid() {
-    let status = {
+  isChainValid() {
+    /*let status = {
         isValid: true,
     }
     
@@ -231,8 +260,8 @@ class Blockchain {
         status.isValid = false;
       }
     }
-    return status;
-  }*/
+    return status;*/
+  }
 }
 
 module.exports = {
