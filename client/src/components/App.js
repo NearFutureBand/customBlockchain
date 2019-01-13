@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route } from 'react-router-dom';
 import Explorer from './Explorer';
-import Client from './Client';
+import ExplorerGraph from './ExplorerGraph';
 import Header from './Header';
 import TransactionCreator from './TransactionCreator';
 import HashMaker from "./HashMaker";
@@ -20,9 +20,10 @@ class App extends Component {
         <BrowserRouter>
           <div>
             <Header />
-            <Route path="/" exact component={TransactionCreator} />
+            <Route path="/" exact component={ExplorerGraph} />
             <Route path="/explorer" component={Explorer} />
             <Route path="/hash-maker" component={HashMaker} />
+            <Route path="/explorer-graph" component={ExplorerGraph} />
           </div>
         </BrowserRouter>
       </div>
