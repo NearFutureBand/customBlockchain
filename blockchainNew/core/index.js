@@ -26,7 +26,7 @@ const automine = async () => {
     })
   );
   await mineOnce();
-  Virtual.addTransaction(
+  /*Virtual.addTransaction(
     new Transaction({
       from: 'Two',
       to: 'Three',
@@ -40,5 +40,5 @@ const automine = async () => {
       amount: '1 BTC'
     })
   );
-  await mineOnce();
+  await mineOnce();*/
 })();

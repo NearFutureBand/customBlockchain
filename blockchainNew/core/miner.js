@@ -1,13 +1,40 @@
-const {  parentPort } = require('worker_threads');
+const { parentPort, workerData } = require('worker_threads');
+const SHA256 = require('crypto-js/sha256');
 
-function random(min, max) {
+console.log('worker data: ', workerData);
+console.log('DJAZZ');
+try {
+  const { previousHash, timestamp, trxsStringified } = workerData.block;
+  
+  const { difficulty } = workerData;
+  let { hash, nonce } = workerData.block;
+
+  const calculateHash = (nonce) => {
+    return SHA256(previousHash + timestamp + trxsStringified + nonce).toString();
+  }
+
+  while( hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
+    nonce++;
+    hash = calculateHash();
+    console.log(nonce);
+  }
+  console.log('mined');
+  workerData.block.hash = hash;
+  parentPort.postMessage(workerData.block);
+} catch ( err ) {
+  console.log(err);
+};
+
+
+/*function random(min, max) {
     return Math.random() * (max - min) + min
 }
 
 const sorter = require("./list-sorter");
 
 const start = Date.now()
-let bigList = Array(1000000).fill().map( (_) => random(1,10000))
+let bigList = Array(1000000).fill().map( (_) => random(1,10000))*/
+
 
 /**
 //вот как получить сообщение из главного потока:
@@ -16,5 +43,5 @@ parentPort.on('message', (msg) => {
 })
 */
 
-sorter.sort(bigList);
-parentPort.postMessage({ val: sorter.firstValue, timeDiff: Date.now() - start});
+//sorter.sort(bigList);
+//parentPort.postMessage({ val: sorter.firstValue, timeDiff: Date.now() - start});

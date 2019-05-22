@@ -1,3 +1,4 @@
+const { Worker, isMainThread } = require('worker_threads');
 const { Transaction } = require('./Transaction');
 const { Block } = require('./Block');
 const _ = require('lodash');
@@ -25,7 +26,26 @@ class Blockchain {
       this.pendingTransactions = _.omit(this.pendingTransactions, _.keys(transactions) );
       //console.log(`   after: ${JSON.stringify(this.pendingTransactions)}`);
       let block = new Block( Date.now(), transactions, this.getLatestBlock().hash );
+      let worker;
+      if( isMainThread ) {
+        console.log('creating worker');
+        worker = new Worker(
+          __dirname + '/miner.js',
+          {
+            workerData: {
+              block,
+              difficulty: this.difficulty
+            }
+          }
+        );
+        worker.on('message', (block) => {
+          console.log(block);
+          resolve(block);
+        });
+        worker.on('error', console.log);
+      }
       
+      /*
       block.mine( this.difficulty )
       //block.approve()
       .then( () => {
@@ -40,7 +60,8 @@ class Blockchain {
           })
         );
         resolve(block);
-      });
+      });*/
+      //resolve(true);
     });
   }
   
