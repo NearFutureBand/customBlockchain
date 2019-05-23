@@ -9,6 +9,9 @@ class Blockchain {
     this.difficulty = 4;
     this.pendingTransactions = {};
     this.miningReward = 100;
+    if( isMainThread ) {
+      this.miner = new Worker(__dirname + '/miner.js');
+    }
   }
   
   createGenesisBlock() {  
@@ -26,8 +29,19 @@ class Blockchain {
       this.pendingTransactions = _.omit(this.pendingTransactions, _.keys(transactions) );
       //console.log(`   after: ${JSON.stringify(this.pendingTransactions)}`);
       let block = new Block( Date.now(), transactions, this.getLatestBlock().hash );
-      let worker;
+
       if( isMainThread ) {
+        this.miner.postMessage({
+          block,
+          difficulty: this.difficulty
+        });
+
+        this.miner.on('message', msg => {
+          console.log('responce: ')
+          console.log(msg);
+        })
+      }
+      /*if( isMainThread ) {
         console.log('creating worker');
         worker = new Worker(
           __dirname + '/miner.js',
@@ -38,12 +52,13 @@ class Blockchain {
             }
           }
         );
+        console.log('worker created');
         worker.on('message', (block) => {
           console.log(block);
           resolve(block);
         });
         worker.on('error', console.log);
-      }
+      }*/
       
       /*
       block.mine( this.difficulty )
@@ -61,7 +76,7 @@ class Blockchain {
         );
         resolve(block);
       });*/
-      //resolve(true);
+      resolve(true);
     });
   }
   
