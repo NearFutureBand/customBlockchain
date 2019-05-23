@@ -9,10 +9,9 @@ class Blockchain {
     this.difficulty = 4;
     this.pendingTransactions = {};
     this.miningReward = 100;
-    this.miner = new Worker(__dirname + '/miner.js', { workerData: null });
   }
   
-  createGenesisBlock() {  
+  createGenesisBlock() {
     return new Block(0, {}, '');
   }
   
@@ -28,42 +27,29 @@ class Blockchain {
       //console.log(`   after: ${JSON.stringify(this.pendingTransactions)}`);
       let block = new Block( Date.now(), transactions, this.getLatestBlock().hash );
 
-        this.miner.postMessage({
-          block,
-          difficulty: this.difficulty
-        });
-
-        this.miner.on('message', msg => {
-          console.log('responce: ')
-          console.log(msg);
-          resolve(msg);
-        })
-        this.miner.on('error', err => {
-          console.log('error: ');
-          console.log(err);
-        });
-        this.miner.on('exit', status => {
-          console.log('exit: ');
-          console.log(status);
-        });
-      /*if( isMainThread ) {
-        console.log('creating worker');
-        worker = new Worker(
-          __dirname + '/miner.js',
-          {
-            workerData: {
-              block,
-              difficulty: this.difficulty
-            }
+      let miner = new Worker(
+        __dirname + '/miner.js',
+        {
+          workerData: {
+            block,
+            difficulty: this.difficulty
           }
+        }
+      );
+      
+      miner.on('message', msg => {
+        console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
+        //console.log('trxs: ', JSON.stringify(block.transactions));
+        this.chain.push(block);
+        this.addTransaction(
+          new Transaction({
+            from: 'virtualchain',
+            to: miningRewardAddress,
+            amount: this.miningReward,
+          })
         );
-        console.log('worker created');
-        worker.on('message', (block) => {
-          console.log(block);
-          resolve(block);
-        });
-        worker.on('error', console.log);
-      }*/
+        resolve(msg);
+      });
       
       /*
       block.mine( this.difficulty )
