@@ -1,4 +1,4 @@
-const { Worker, isMainThread } = require('worker_threads');
+const { Worker } = require('worker_threads');
 const { Transaction } = require('./Transaction');
 const { Block } = require('./Block');
 const _ = require('lodash');
@@ -9,9 +9,7 @@ class Blockchain {
     this.difficulty = 4;
     this.pendingTransactions = {};
     this.miningReward = 100;
-    if( isMainThread ) {
-      this.miner = new Worker(__dirname + '/miner.js');
-    }
+    this.miner = new Worker(__dirname + '/miner.js', { workerData: null });
   }
   
   createGenesisBlock() {  
@@ -30,7 +28,6 @@ class Blockchain {
       //console.log(`   after: ${JSON.stringify(this.pendingTransactions)}`);
       let block = new Block( Date.now(), transactions, this.getLatestBlock().hash );
 
-      if( isMainThread ) {
         this.miner.postMessage({
           block,
           difficulty: this.difficulty
@@ -39,8 +36,16 @@ class Blockchain {
         this.miner.on('message', msg => {
           console.log('responce: ')
           console.log(msg);
+          resolve(msg);
         })
-      }
+        this.miner.on('error', err => {
+          console.log('error: ');
+          console.log(err);
+        });
+        this.miner.on('exit', status => {
+          console.log('exit: ');
+          console.log(status);
+        });
       /*if( isMainThread ) {
         console.log('creating worker');
         worker = new Worker(
@@ -76,7 +81,7 @@ class Blockchain {
         );
         resolve(block);
       });*/
-      resolve(true);
+      
     });
   }
   
@@ -84,6 +89,7 @@ class Blockchain {
     this.pendingTransactions[transaction.trx_id] = transaction;
     //console.log('trx added: ', JSON.stringify(transaction));
   }
+
 }
 
 module.exports = {

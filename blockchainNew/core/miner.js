@@ -2,23 +2,19 @@ const { parentPort, workerData } = require('worker_threads');
 const SHA256 = require('crypto-js/sha256');
 
 parentPort.on('message', (msg) => {
-  //console.log('data', msg);
-  parentPort.postMessage(msg.block);
-  /*const { previousHash, timestamp, trxsStringified } = msg.block;
-  
+  const { previousHash, timestamp, trxsStringified } = msg.block;
   const { difficulty } = msg;
   let { hash, nonce } = msg.block;
 
   const calculateHash = (nonce) => {
     return SHA256(previousHash + timestamp + trxsStringified + nonce).toString();
   }
-
+  
   while( hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
     nonce++;
-    hash = calculateHash();
+    hash = calculateHash(nonce);
   }
-  console.log('mined');
-  msg.block.hash = hash;*/
+  msg.block.hash = hash;
   parentPort.postMessage(msg.block);
 });
 
