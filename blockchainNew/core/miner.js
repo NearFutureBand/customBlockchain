@@ -14,6 +14,7 @@ while( hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
   hash = calculateHash(nonce);
 }
 workerData.block.hash = hash;
+workerData.block.nonce = nonce;
 parentPort.postMessage(workerData.block);
 
 

@@ -1,8 +1,16 @@
 const { Blockchain } = require('./Blockchain');
+const _ = require('lodash');
 const { Transaction } = require('./Transaction');
 
 let Virtual = new Blockchain();
 console.log(`blockchain's started`);
+
+const showTransactions = (block) => {
+  console.log('trxs: ');
+  _.forIn(block.transactions, (trx) =>{
+    console.log(`   from: ${trx.from}, to: ${trx.to}, amount: ${trx.amount}`);
+  });
+}
 
 const mineOnce = async (miner) => {
   console.log('mining...');
@@ -13,9 +21,12 @@ const mineOnce = async (miner) => {
 const automine = async () => {
   while(true) {
     const newBlock = await mineOnce('virtualchain');
-    console.log(newBlock);
+    //console.log(newBlock);
+    showTransactions(newBlock);
+    console.log('');
   }
 }
+automine();
 
 (async() => {
   Virtual.addTransaction(
@@ -42,4 +53,8 @@ const automine = async () => {
   );
   await mineOnce();
   return 0;
-})();
+});
+
+module.exports = {
+  Virtual
+};

@@ -6,7 +6,7 @@ const _ = require('lodash');
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
-    this.difficulty = 4;
+    this.difficulty = 5;
     this.pendingTransactions = {};
     this.miningReward = 100;
   }
@@ -37,9 +37,12 @@ class Blockchain {
         }
       );
       
-      miner.on('message', msg => {
-        console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
-        //console.log('trxs: ', JSON.stringify(block.transactions));
+      miner.on('message', block => {
+        console.log(`\n------ new block is mined ------\n`);
+        console.log(`block's hash: ${block.hash}`);
+        console.log(`prev hash: ${block.previousHash}`)
+        console.log(`trx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
+
         this.chain.push(block);
         this.addTransaction(
           new Transaction({
@@ -48,7 +51,7 @@ class Blockchain {
             amount: this.miningReward,
           })
         );
-        resolve(msg);
+        resolve(block);
       });
       
       /*
@@ -74,6 +77,14 @@ class Blockchain {
   addTransaction( transaction) {
     this.pendingTransactions[transaction.trx_id] = transaction;
     //console.log('trx added: ', JSON.stringify(transaction));
+  }
+
+  show() {
+    console.log('blockchain: ');
+    this.chain.forEach( block => {
+      console.log(`hash: ${block.hash}
+      prevHash: ${block.previousHash}\n`);
+    });
   }
 
 }
