@@ -1,26 +1,21 @@
 {
-  "name": "customblockchain",
+  "name": "blockchain-new",
   "version": "1.0.0",
   "description": "",
-  "main": "core.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/NearFutureBand/customBlockchain.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/NearFutureBand/customBlockchain/issues"
-  },
-  "homepage": "https://github.com/NearFutureBand/customBlockchain#readme",
+  "main": "index.js",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
-    "elliptic": "^6.4.1",
-    "express": "^4.16.4",
     "lodash": "^4.17.11",
-    "ws": "^6.1.2"
-  }
+    "ws": "^7.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --experimental-worker server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

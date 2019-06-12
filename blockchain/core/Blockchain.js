@@ -6,7 +6,7 @@ const _ = require('lodash');
 class Blockchain {
   constructor() {
     this.chain = [this.createGenesisBlock()];
-    this.difficulty = 5;
+    this.difficulty = 4;
     this.pendingTransactions = {};
     this.miningReward = 100;
   }
@@ -41,7 +41,7 @@ class Blockchain {
         console.log(`\n------ new block is mined ------\n`);
         console.log(`block's hash: ${block.hash}`);
         console.log(`prev hash: ${block.previousHash}`)
-        console.log(`trx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
+        console.log(`trx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}\ntime: ${block.miningtTime}`);
 
         this.chain.push(block);
         this.addTransaction(
@@ -51,6 +51,7 @@ class Blockchain {
             amount: this.miningReward,
           })
         );
+        miner.terminate();
         resolve(block);
       });
       

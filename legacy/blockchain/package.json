@@ -1,0 +1,26 @@
+{
+  "name": "customblockchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "core.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NearFutureBand/customBlockchain.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NearFutureBand/customBlockchain/issues"
+  },
+  "homepage": "https://github.com/NearFutureBand/customBlockchain#readme",
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "elliptic": "^6.4.1",
+    "express": "^4.16.4",
+    "lodash": "^4.17.11",
+    "ws": "^6.1.2"
+  }
+}

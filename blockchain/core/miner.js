@@ -1,20 +1,29 @@
 const { parentPort, workerData } = require('worker_threads');
 const SHA256 = require('crypto-js/sha256');
+const fs = require('fs');
 
 const { previousHash, timestamp, trxsStringified } = workerData.block;
 const { difficulty } = workerData;
 let { hash, nonce } = workerData.block;
+fs.appendFile('miner-logs.txt', `mining...\n`, () => {});
 
 const calculateHash = (nonce) => {
   return SHA256(previousHash + timestamp + trxsStringified + nonce).toString();
 }
 
+const start = Date.now();
 while( hash.substring(0, difficulty) !== Array( difficulty + 1).join('0')) {
   nonce++;
   hash = calculateHash(nonce);
+  if(nonce % 50000 === 0) {
+    fs.appendFile('miner-logs.txt', `nonce: ${nonce}\n`, () => {});
+  }
 }
+const ms = Date.now() - start;
 workerData.block.hash = hash;
 workerData.block.nonce = nonce;
+workerData.block.miningtTime = ms;
+fs.appendFile("miner-logs.txt", `block mined:\nhash: ${hash}\nprevHash: ${previousHash}\nnonce: ${nonce}\ntime: ${ms}`, () => {});
 parentPort.postMessage(workerData.block);
 
 
