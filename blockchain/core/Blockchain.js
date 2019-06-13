@@ -53,35 +53,16 @@ class Blockchain {
         );
         miner.terminate();
         resolve(block);
-      });
-      
-      /*
-      block.mine( this.difficulty )
-      //block.approve()
-      .then( () => {
-        console.log(`\n\nblock: ${block.hash}\ntrx: ${_.keys(block.transactions).length}\nnonce: ${block.nonce}`);
-        //console.log('trxs: ', JSON.stringify(block.transactions));
-        this.chain.push(block);
-        this.addTransaction(
-          new Transaction({
-            from: 'virtualchain',
-            to: miningRewardAddress,
-            amount: this.miningReward,
-          })
-        );
-        resolve(block);
-      });*/
-      
+      });      
     });
   }
   
   addTransaction( transaction) {
     this.pendingTransactions[transaction.trx_id] = transaction;
-    //console.log('trx added: ', JSON.stringify(transaction));
   }
 
   show() {
-    console.log('blockchain: ');
+    console.log('\nblockchain: ');
     this.chain.forEach( block => {
       console.log(`hash: ${block.hash}
       prevHash: ${block.previousHash}\n`);

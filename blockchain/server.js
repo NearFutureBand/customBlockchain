@@ -1,8 +1,8 @@
 const WebSocketServer = new require('ws');
-const { Blockchain } = require('./Blockchain');
+const { Blockchain } = require('./core/Blockchain');
+const { Transaction } = require('./core/Transaction');
 const _ = require('lodash');
 const fs = require('fs');
-const { Transaction } = require('./Transaction');
 
 
 let Virtual = new Blockchain();
@@ -32,9 +32,9 @@ webSocketServer.on('connection', (ws) => {
         amount
       })
     );
-
     console.log(`\nnew transaction: ${req}`); 
   });
+
   console.log(`Websocket connection: 8081`);
 });
 
@@ -43,20 +43,17 @@ const sendNewBlockToClients = (block) => {
     clients[key].send( JSON.stringify( block ) );
   }
 }
-
 const showTransactions = (block) => {
   console.log('trxs: ');
   _.forIn(block.transactions, (trx) =>{
     console.log(`   from: ${trx.from}, to: ${trx.to}, amount: ${trx.amount}`);
   });
 }
-
 const mineOnce = async (miner) => {
   console.log('mining...');
   const newBlock = await Virtual.minePendingTransactions(miner);
   return newBlock;
 }
-
 const automine = async () => {
   while(true) {
     const newBlock = await mineOnce('virtualchain');

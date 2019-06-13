@@ -1,5 +1,5 @@
-//const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
 const SHA256 = require('crypto-js/sha256');
+const _ = require('lodash');
 
 class Block {
   constructor(timestamp, transactions, previousHash) {
@@ -9,6 +9,7 @@ class Block {
     this.hash = this.calculateHash();
     this.nonce = 0;
     this.trxsStringified = JSON.stringify(this.transactions);
+    this.miningTime = 0;
   }
   
   calculateHash() {
@@ -32,6 +33,13 @@ class Block {
         resolve();
       }, 2000);
     });
+  }
+  
+  show() {
+    console.log(`\n------ new block is mined ------\n`);
+    console.log(`block's hash: ${this.hash}`);
+    console.log(`prev hash: ${this.previousHash}`)
+    console.log(`trx: ${_.keys(this.transactions).length}\nnonce: ${this.nonce}\ntime: ${this.miningtTime}`);
   }
 }
 
