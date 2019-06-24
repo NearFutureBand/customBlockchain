@@ -7,7 +7,6 @@ const fs = require('fs');
 
 let Virtual = new Blockchain();
 console.log(`blockchain's started`);
-fs.open('miner-logs.txt', 'w', () => {});
 
 let clients = {};
 let webSocketServer = new WebSocketServer.Server({port: 8081});
