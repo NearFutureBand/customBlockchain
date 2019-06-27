@@ -1,3 +1,5 @@
+import { generateTrx } from '../helperFunctions';
+
 export const SOCKET_CREATED = 'SOCKET_CREATED';
 export const CONNECT_TO_BLOCKCHAIN_SUCCESS = 'CONNECT_TO_BLOCKCHAIN_SUCCESS';
 export const INCOMING_MESSAGE = 'INCOMING_MESSAGE';
@@ -40,7 +42,10 @@ export const connectToBlockchain = () => {
     socket.onopen = () => {
       let i = 1;
       const interval = setInterval( () => {
-        dispatch( createTransaction('person', 'account', i++) );
+        const trx = generateTrx();
+        dispatch(
+          createTransaction(trx.from, trx.to, trx.amount) 
+        );
         if ( i === 100) { clearInterval(interval); }
       }, 10000);
       dispatch( connectToBlockchainSuccess(interval) );
