@@ -1,7 +1,9 @@
 const { Worker } = require('worker_threads');
+const fs = require('fs');
+const _ = require('lodash');
 const { Transaction } = require('./Transaction');
 const { Block } = require('./Block');
-const _ = require('lodash');
+
 
 class Blockchain {
   constructor() {
@@ -9,6 +11,9 @@ class Blockchain {
     this.difficulty = 5;
     this.pendingTransactions = {};
     this.miningReward = 100;
+    this.filename = `history-${Date.now()}.json`;
+    fs.open(this.filename, 'w', console.error);
+    fs.appendFile(this.filename, '[\n', console.error);
   }
   
   createGenesisBlock() {
@@ -52,6 +57,7 @@ class Blockchain {
           })
         );
         miner.terminate();
+        this.addBlockToFile(block);
         resolve(block);
       });      
     });
@@ -67,6 +73,15 @@ class Blockchain {
       console.log(`hash: ${block.hash}
       prevHash: ${block.previousHash}\n`);
     });
+  }
+
+  addBlockToFile(block) {
+    const trxs = _.values(block.transactions);
+    let history = '';
+    trxs.map( (trx) => {
+      history += `${JSON.stringify(trx)},\n`;
+    });
+    fs.appendFile(this.filename, history, console.error);
   }
 
 }
